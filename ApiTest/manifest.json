@@ -1,0 +1,10 @@
+﻿{
+  "Name": "Api Test",
+  "Author": "ferdaber",
+  "Version": "1.0.2",
+  "Description": "Allows use of autograbber for harvesting crops, slime balls, fruit trees, bushes, forageable items, and artifact spots.",
+  "UniqueID": "ferdaber.ApiTest",
+  "EntryDll": "ApiTest.dll",
+  "MinimumApiVersion": "3.0.0",
+  "UpdateKeys": []
+}

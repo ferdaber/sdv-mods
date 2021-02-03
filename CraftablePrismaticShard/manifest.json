@@ -1,0 +1,10 @@
+{
+    "Name": "Mineral Crafting Recipes",
+    "Author": "ferdaber",
+    "Version": "1.0.0",
+    "Description": "Adds more crafting recipes to the game for hard-to-find minerals.",
+    "UniqueID": "ferdaber.MineralCraftingRecipes",
+	"EntryDll": "MineralCraftingRecipes.dll",
+    "MinimumApiVersion": "3.0.1",
+    "UpdateKeys": []
+}

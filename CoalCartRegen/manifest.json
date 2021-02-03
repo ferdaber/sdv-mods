@@ -1,0 +1,10 @@
+﻿{
+	"Name": "Coal Cart Regen",
+	"Author": "ferdaber",
+	"Version": "1.0.0",
+	"Description": "Regenerates the coal carts in mines every 2 days.",
+	"UniqueID": "ferdaber.CoalCartRegen",
+	"EntryDll": "CoalCartRegen.dll",
+	"MinimumApiVersion": "3.0.0",
+	"UpdateKeys": []
+}

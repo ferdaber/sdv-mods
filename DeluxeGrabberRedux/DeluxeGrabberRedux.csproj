@@ -59,6 +59,7 @@
     <Compile Include="Grabbers\IndoorPotGrabber.cs" />
     <Compile Include="Grabbers\AggregateGrabber.cs" />
     <Compile Include="Grabbers\OrePanGrabber.cs" />
+    <Compile Include="Grabbers\TownGarbageCanGrabber.cs" />
     <Compile Include="Grabbers\WoodsHardwoodGrabber.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="IGenericModConfigMenuApi.cs" />

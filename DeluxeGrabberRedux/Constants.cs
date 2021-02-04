@@ -56,8 +56,6 @@ namespace DeluxeGrabberRedux
         public const int FrozenTear = 84;
         public const int FossilizedTail = 822;
         public const int TaroTuber = 831;
-        public const int Seaweed = 152;
-        public const int Mussel = 719;
 
         // not an object id
         public const int LuckyRing = 859;

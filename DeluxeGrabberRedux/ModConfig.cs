@@ -21,6 +21,7 @@ namespace DeluxeGrabberRedux
         public bool reportYield;
         public bool gainExperience;
         public bool fellSecretWoodsStumps;
+        public bool garbageCans;
 
         public ModConfig()
         {
@@ -37,6 +38,7 @@ namespace DeluxeGrabberRedux
             reportYield = true;
             gainExperience = true;
             fellSecretWoodsStumps = false;
+            garbageCans = false;
         }
     }
 }

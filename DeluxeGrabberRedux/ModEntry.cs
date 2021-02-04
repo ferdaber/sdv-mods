@@ -2,6 +2,7 @@
 using StardewModdingAPI;
 using StardewValley;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -54,6 +55,7 @@ namespace DeluxeGrabberRedux
                 configApi.RegisterSimpleOption(ModManifest, "Dig Up Artifact Spots", "Note that lost books and secret notes will not be dug up", () => Config.artifactSpots, v => Config.artifactSpots = v);
                 configApi.RegisterSimpleOption(ModManifest, "Collect Ore From Panning Sites", "", () => Config.orePan, v => Config.orePan = v);
                 configApi.RegisterSimpleOption(ModManifest, "Fell Stumps in Secret Woods", "", () => Config.fellSecretWoodsStumps, v => Config.fellSecretWoodsStumps = v);
+                configApi.RegisterSimpleOption(ModManifest, "Search Garbage Cans in Town", "", () => Config.garbageCans, v => Config.garbageCans = v);
                 configApi.RegisterLabel(ModManifest, "Miscellaneous", "");
                 configApi.RegisterSimpleOption(ModManifest, "Report Yield", "Logs to the SMAPI console the yield of each auto grabber", () => Config.reportYield, v => Config.reportYield = v);
                 configApi.RegisterSimpleOption(ModManifest, "Gain Experience", "Gain appropriate experience as if you foraged or harvested yourself", () => Config.gainExperience, v => Config.gainExperience = v);
@@ -91,17 +93,12 @@ namespace DeluxeGrabberRedux
 
         private bool GrabAtLocation(GameLocation location)
         {
-            var objectsGrabber = new AggregateObjectsGrabber(this, location);
-            var featuresGrabber = new AggregateFeaturesGrabber(this, location);
-            var hardwoodGrabber = new WoodsHardwoodGrabber(this, location);
-
-            var previousInventory = Config.reportYield ? objectsGrabber.GetInventory() : null;
-            var grabbed = (objectsGrabber.CanGrab() && objectsGrabber.GrabItems()) || 
-                (featuresGrabber.CanGrab() && featuresGrabber.GrabItems()) ||
-                (hardwoodGrabber.CanGrab() && hardwoodGrabber.GrabItems());
+            var grabber = new AggregateDailyGrabber(this, location);
+            var previousInventory = Config.reportYield ? grabber.GetInventory() : null;
+            var grabbed = grabber.GrabItems();
             if (previousInventory != null)
             {
-                var nextInventory = objectsGrabber.GetInventory();
+                var nextInventory = grabber.GetInventory();
                 var sb = new StringBuilder($"Yield of autograbber(s) at {location.Name}:\n");
                 var shouldPrint = false;
                 foreach (var pair in nextInventory)
@@ -113,7 +110,6 @@ namespace DeluxeGrabberRedux
                     {
                         diff -= previousInventory[pair.Key];
                     }
-                    // LogDebug($"Inventory diff {item.Name} ({item.QualityName}) x{previousInventory[pair.Key]} vs x{stack}");
                     if (diff <= 0) continue;
                     sb.AppendLine($"    {item.Name} ({item.QualityName}) x{diff}");
                     shouldPrint = true;

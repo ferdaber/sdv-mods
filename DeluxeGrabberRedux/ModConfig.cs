@@ -13,6 +13,7 @@ namespace DeluxeGrabberRedux
         public bool harvestCrops;
         public bool harvestCropsIndoorPots;
         public int harvestCropsRange;
+        public string harvestCropsRangeMode;
         public bool artifactSpots;
         public bool orePan;
         public bool bushes;
@@ -24,6 +25,8 @@ namespace DeluxeGrabberRedux
         public bool fellSecretWoodsStumps;
         public bool garbageCans;
 
+        internal static string[] HarvestCropsRangeMode = new string[] { "Square", "Walk" };
+
         public ModConfig()
         {
             slimeHutch = true;
@@ -31,6 +34,7 @@ namespace DeluxeGrabberRedux
             harvestCrops = false;
             harvestCropsIndoorPots = true;
             harvestCropsRange = -1;
+            harvestCropsRangeMode = "Walk";
             artifactSpots = false;
             orePan = false;
             bushes = true;

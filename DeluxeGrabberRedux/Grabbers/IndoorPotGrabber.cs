@@ -21,7 +21,7 @@ namespace DeluxeGrabberRedux.Grabbers
             {
                 var dirt = pot.hoeDirt.Value;
                 var crops = Helpers.HarvestCropFromHoeDirt(Player, dirt, tile, !Config.flowers, out int exp);
-                var availableGrabbers = Helpers.GetNearbyObjectsToTile(tile, GrabberPairs, Config.harvestCropsRange);
+                var availableGrabbers = Helpers.GetNearbyObjectsToTile(tile, GrabberPairs, Config.harvestCropsRange, Config.harvestCropsRangeMode);
                 if (TryAddItems(crops, availableGrabbers))
                 {
                     if (dirt.crop.regrowAfterHarvest.Value == -1)

@@ -1,4 +1,6 @@
 ﻿using DeluxeGrabberRedux.Grabbers;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
 using System;
@@ -24,8 +26,10 @@ namespace DeluxeGrabberRedux
             helper.Events.GameLoop.GameLaunched += OnLaunched;
             helper.Events.GameLoop.DayStarted += OnDayStarted;
             helper.Events.GameLoop.TimeChanged += OnTenMinuteUpdate;
+            helper.Events.Display.RenderedWorld += OnRenderedWorld; 
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
         }
+
         public void LogDebug(string message)
         {
             Monitor.Log(message, LogLevel.Trace);
@@ -46,7 +50,8 @@ namespace DeluxeGrabberRedux
                 configApi.RegisterSimpleOption(ModManifest, "Harvest Crops", "", () => Config.harvestCrops, v => Config.harvestCrops = v);
                 configApi.RegisterSimpleOption(ModManifest, "Harvest Crops Inside Pots", "This is ignored if 'Harvest Crops' is disabled", () => Config.harvestCropsIndoorPots, v => Config.harvestCropsIndoorPots = v);
                 configApi.RegisterSimpleOption(ModManifest, "Harvest Flowers", "This is ignored if 'Harvest crops' is disabled", () => Config.flowers, v => Config.flowers = v);
-                configApi.RegisterSimpleOption(ModManifest, "Harvest Range", "This is ignored if 'Harvest Crops' is disabled. Set to -1 to use infinite range", () => Config.harvestCropsRange, v => Config.harvestCropsRange = Math.Max(-1, v));
+                configApi.RegisterSimpleOption(ModManifest, "Harvest Range", "This is ignored if 'Harvest Crops' is disabled. Set to -1 to use infinite range. This ONLY affects crop harvesting.", () => Config.harvestCropsRange, v => Config.harvestCropsRange = Math.Max(-1, v));
+                configApi.RegisterChoiceOption(ModManifest, "Harvest Range Mode", "'Walk': the distance is the walking distance (in four directions) from the grabber, becoming a diamond shape. 'Square': the distance is a square like a sprinkler. Covers more area than 'Walk'.", () => Config.harvestCropsRangeMode, v => Config.harvestCropsRangeMode = v, ModConfig.HarvestCropsRangeMode);
                 configApi.RegisterLabel(ModManifest, "Other Harvesting", "");
                 configApi.RegisterSimpleOption(ModManifest, "Harvest Fruit Trees", "", () => Config.fruitTrees, v => Config.fruitTrees = v);
                 configApi.RegisterSimpleOption(ModManifest, "Harvest Berry Bushes", "", () => Config.bushes, v => Config.bushes = v);
@@ -90,6 +95,45 @@ namespace DeluxeGrabberRedux
             LogDebug($"Autograbbing on day start");
             var locations = Game1.locations.Concat(Game1.getFarm().buildings.Select(building => building.indoors.Value)).Where(location => location != null);
             foreach (var location in locations) GrabAtLocation(location);
+        }
+
+        private void OnRenderedWorld(object sender, StardewModdingAPI.Events.RenderedWorldEventArgs e)
+        {
+            if (!(Context.IsPlayerFree && !Game1.eventUp && Game1.farmEvent == null && Config.harvestCropsRange > 0 && Config.harvestCrops)) return;
+
+            if (Config.harvestCrops 
+                && Config.harvestCropsRange > 0 
+                && Game1.player.ActiveObject != null 
+                && Game1.player.ActiveObject.bigCraftable.Value 
+                && Game1.player.ActiveObject.ParentSheetIndex == ItemIds.Autograbber)
+            {
+                // impl @ StardewValley::Object::drawPlacementBounds
+                var placementTile = Game1.GetPlacementGrabTile();
+                var X = (int)placementTile.X;
+                var Y = (int)placementTile.Y;
+                if (Game1.IsPerformingMousePlacement())
+                {
+                    var range = Config.harvestCropsRange;
+                    for (int x = X - range; x <= X + range; x++)
+                    {
+                        for (int y = Y - range; y <= Y + range; y++)
+                        {
+                            if (Config.harvestCropsRangeMode == "Walk" && Math.Abs(X - x) + Math.Abs(Y - y) > range) continue;
+                            Game1.spriteBatch.Draw(
+                                        Game1.mouseCursors,
+                                        Game1.GlobalToLocal(new Vector2(x, y) * 64),
+                                        new Rectangle(194, 388, 16, 16),
+                                        Color.White,
+                                        0,
+                                        Vector2.Zero,
+                                        4,
+                                        SpriteEffects.None,
+                                        0.01f
+                            );
+                        }
+                    }
+                }
+            }
         }
 
         private bool GrabAtLocation(GameLocation location)

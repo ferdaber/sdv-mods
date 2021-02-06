@@ -1,6 +1,9 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Harmony;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Menus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,119 +13,102 @@ using SObject = StardewValley.Object;
 
 namespace ApiTest
 {
-    public interface IDeluxeGrabberReduxApi
-    {
-        /// <summary>
-        /// This is a delegate that should be set by other mods to override the default harvest outcome of a mushroom.
-        /// <br /><br />
-        /// <b>Parameter types:</b>
-        /// <list type="number">
-        ///     <item>
-        ///         <term>SObject mushroom</term>
-        ///         <description>The original object to be harvested (will be a mushroom object).</description>
-        ///     </item>
-        ///     <item>
-        ///         <term>Vector2 tile</term>
-        ///         <description>The tile where the mushroom box was located.</description>
-        ///     </item>
-        ///     <item>
-        ///         <term>GameLocation location</term>
-        ///         <description>The location that the harvest occurred in.</description>
-        ///     </item>
-        /// </list>
-        /// <br /><br />
-        /// <b>Return type (KeyValuePair):</b>
-        /// <list type="number">
-        ///     <item>
-        ///         <term>SObject newMushroom</term>
-        ///         <description>The object that will be harvested instead.</description>
-        ///     </item>
-        ///     <item>
-        ///         <term>int expGain</term>
-        ///         <description>The foraging skill EXP to be gained if the harvest was succesful.</description>
-        ///     </item>
-        /// </list>
-        /// </summary>
-        Func<SObject, Vector2, GameLocation, KeyValuePair<SObject, int>> GetMushroomHarvest { get; set; }
-
-        /// <summary>
-        /// This is a delegate that should be set by other mods to override the default harvest outcome of a berry bush.
-        /// <br /><br />
-        /// <b>Parameter types:</b>
-        /// <list type="number">
-        ///     <item>
-        ///         <term>SObject berry</term>
-        ///         <description>The original object to be harvested (will be a berry or tea leaves).</description>
-        ///     </item>
-        ///     <item>
-        ///         <term>Vector2 tile</term>
-        ///         <description>The tile where the bush was located.</description>
-        ///     </item>
-        ///     <item>
-        ///         <term>GameLocation location</term>
-        ///         <description>The location that the harvest occurred in.</description>
-        ///     </item>
-        /// </list>
-        /// <br /><br />
-        /// <b>Return type (KeyValuePair):</b>
-        /// <list type="number">
-        ///     <item>
-        ///         <term>SObject newBerry</term>
-        ///         <description>The object that will be harvested instead.</description>
-        ///     </item>
-        ///     <item>
-        ///         <term>int expGain</term>
-        ///         <description>The foraging skill EXP to be gained if the harvest was succesful.</description>
-        ///     </item>
-        /// </list>
-        /// </summary>
-        Func<SObject, Vector2, GameLocation, KeyValuePair<SObject, int>> GetBerryBushHarvest { get; set; }
-    }
-
     public class ModEntry : Mod
     {
-        private Dictionary<Vector2, Random> rs;
+        private static IMonitor ModMonitor;
         public override void Entry(IModHelper helper)
         {
-            rs = new Dictionary<Vector2, Random>();
             //Helper.Events.GameLoop.DayStarted += GameLoop_DayStarted;
             //Helper.Events.GameLoop.GameLaunched += GameLoop_GameLaunched;
+            ModMonitor = Monitor;
+            AddPatches();
         }
 
         private void GameLoop_DayStarted(object sender, StardewModdingAPI.Events.DayStartedEventArgs e)
         {
-            rs.Clear();
         }
 
         private void GameLoop_GameLaunched(object sender, StardewModdingAPI.Events.GameLaunchedEventArgs e)
         {
-            var api = Helper.ModRegistry.GetApi<IDeluxeGrabberReduxApi>("ferdaber.DeluxeGrabberRedux");
-            api.GetBerryBushHarvest = GetBerryBushHarvest;
-            api.GetBerryBushHarvest = GetBerryBushHarvestToo;
         }
 
-        private KeyValuePair<SObject, int> GetBerryBushHarvest(SObject berry, Vector2 bushTile, GameLocation location)
+        private void AddPatches()
         {
-            if (!rs.TryGetValue(bushTile, out Random r))
-            {
-                r = new Random((int)bushTile.X + (int)bushTile.Y * 5000 + (int)Game1.uniqueIDForThisGame + (int)Game1.stats.DaysPlayed);
-                rs.Add(bushTile, r);
-            }
-            var q = r.NextDouble();
-            berry.Quality = q < 0.05 ? SObject.bestQuality : q < 0.1 ? SObject.highQuality : q < 0.4 ? SObject.medQuality : SObject.lowQuality;
-            return new KeyValuePair<SObject, int>(berry, 0);
+            //var harmony = HarmonyInstance.Create(this.ModManifest.UniqueID);
+
+            //harmony.Patch(
+            //    original: AccessTools.Method(typeof(Tool), nameof(RenovateMenu.draw)),
+            //    prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.patch_Tool_draw))
+            //);
+            //harmony.Patch(
+            //    original: AccessTools.Method(typeof(Tool), nameof(CarpenterMenu.draw)),
+            //    prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.patch_Tool_draw))
+            //);
+            //harmony.Patch(
+            //    original: AccessTools.Method(typeof(Tool), nameof(Tool.draw)),
+            //    prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.patch_Tool_draw))
+            //);
+            //harmony.Patch(
+            //    original: AccessTools.Method(typeof(Game1), nameof(Game1.drawMouseCursor)),
+            //    prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.patch_drawMouseCursor))
+            //);
+            //harmony.Patch(
+            //    original: AccessTools.Method(typeof(StardewValley.Object), nameof(StardewValley.Object.drawPlacementBounds)),
+            //    prefix: new HarmonyMethod(typeof(ModEntry), nameof(ModEntry.patch_drawPlacementBounds))
+            //);
         }
 
-        private KeyValuePair<SObject, int> GetBerryBushHarvestToo(SObject berry, Vector2 bushTile, GameLocation location)
+        public static bool patch_Tool_draw()
         {
-            if (!rs.TryGetValue(bushTile, out Random r))
+            try
             {
-                r = new Random((int)bushTile.X + (int)bushTile.Y * 5000 + (int)Game1.uniqueIDForThisGame + (int)Game1.stats.DaysPlayed);
-                rs.Add(bushTile, r);
+                return false;
             }
-            var q = r.NextDouble();
-            berry.Quality = q < 0.05 ? SObject.bestQuality : q < 0.1 ? SObject.highQuality : q < 0.4 ? SObject.medQuality : SObject.lowQuality;
-            return new KeyValuePair<SObject, int>(berry, 0);
+            catch (Exception ex)
+            {
+                ModMonitor.Log($"Error in patch:\n{ex}", LogLevel.Error);
+                return true;
+            }
+        }
+
+        public static bool patch_drawMouseCursor(Game1 __instance)
+        {
+            try
+            {
+                var obj = Game1.player.ActiveObject;
+                if (obj != null && obj.bigCraftable.Value && obj.ParentSheetIndex == 10)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                ModMonitor.Log($"Error in patch:\n{ex}", LogLevel.Error);
+                return true;
+            }
+        }
+
+        public static bool patch_drawPlacementBounds(StardewValley.Object __instance, SpriteBatch spriteBatch, GameLocation location)
+        {
+            try
+            {
+                if (__instance.bigCraftable.Value && __instance.ParentSheetIndex == 10)
+                {
+                    return false;
+                } else
+                {
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                ModMonitor.Log($"Error in patch:\n{ex}", LogLevel.Error);
+                return true;
+            }
         }
     }
 }

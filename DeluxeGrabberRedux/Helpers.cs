@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewValley;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
@@ -11,16 +12,31 @@ namespace DeluxeGrabberRedux
 {
     static class Helpers
     {
-        public static IEnumerable<KeyValuePair<Vector2, SObject>> GetNearbyObjectsToTile(Vector2 tile, IEnumerable<KeyValuePair<Vector2, SObject>> objects, int range)
+        public static IEnumerable<KeyValuePair<Vector2, SObject>> GetNearbyObjectsToTile(Vector2 tile, IEnumerable<KeyValuePair<Vector2, SObject>> objects, int range, string rangeMode)
         {
             if (range > -1)
             {
-                return objects.Where(pair =>
+                if (rangeMode == "Walk")
                 {
-                    var other = pair.Key;
-                    var manhattanDistance = Math.Abs(tile.X - other.X) + Math.Abs(tile.Y - other.Y);
-                    return manhattanDistance <= range;
-                });
+                    return objects.Where(pair =>
+                    {
+                        var other = pair.Key;
+                        var manhattanDistance = Math.Abs(tile.X - other.X) + Math.Abs(tile.Y - other.Y);
+                        return manhattanDistance <= range;
+                    });
+                }
+                else if (rangeMode == "Square")
+                {
+                    return objects.Where(pair =>
+                    {
+                        var other = pair.Key;
+                        return tile.X >= other.X - range && tile.X <= other.X + range && tile.Y >= other.Y - range && tile.Y <= other.Y + range;
+                    });
+                }
+                else
+                {
+                    throw new Exception($"Unexpected range mode {rangeMode}.");
+                }
             }
             else
             {

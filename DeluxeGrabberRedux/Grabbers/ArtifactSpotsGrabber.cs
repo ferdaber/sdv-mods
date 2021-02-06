@@ -107,9 +107,9 @@ namespace DeluxeGrabberRedux.Grabbers
             }
 
             var locationData = Game1.content.Load<Dictionary<string, string>>("Data\\Locations");
-            if (!locationData.ContainsKey(location.Name)) return null;
+            if (!locationData.ContainsKey(location.Name)) return artifacts;
             var rawLocationData = locationData[location.Name].Split('/')[8].Split(' ');
-            if (rawLocationData.Length == 0 || rawLocationData[0] == "-1") return null;
+            if (rawLocationData.Length == 0 || rawLocationData[0] == "-1") return artifacts;
 
             for (int i = 0; i < rawLocationData.Length; i += 2)
             {

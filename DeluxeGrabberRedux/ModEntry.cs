@@ -3,10 +3,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewValley;
+using StardewValley.Objects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SObject = StardewValley.Object;
 
 namespace DeluxeGrabberRedux
 {
@@ -28,16 +30,105 @@ namespace DeluxeGrabberRedux
             helper.Events.GameLoop.TimeChanged += OnTenMinuteUpdate;
             helper.Events.Display.RenderedWorld += OnRenderedWorld; 
             helper.Events.World.ObjectListChanged += OnObjectListChanged;
+            helper.Events.Input.ButtonPressed += OnButtonPress;
         }
 
         public void LogDebug(string message)
         {
-            Monitor.Log(message, LogLevel.Trace);
+            Monitor.Log(message, LogLevel.Debug);
+        }
+
+        public ModSaveData GetSaveData()
+        {
+            return Helper.Data.ReadSaveData<ModSaveData>(ModManifest.UniqueID);
+        }
+
+        public void SetSaveData(ModSaveData saveData)
+        {
+            Helper.Data.WriteSaveData(ModManifest.UniqueID, saveData);
         }
 
         public override object GetApi()
         {
             return Api;
+        }
+
+        public bool IsUsingGlobalGrabber()
+        {
+            var saveData = GetSaveData();
+            return saveData != null && saveData.GlobalGrabberLocation != null && saveData.GlobalGrabberTile != Vector2.Zero;
+        }
+
+        public bool TryGetGlobalAutoGrabber(bool assert, out KeyValuePair<Vector2, SObject> globalGrabberPair, out GameLocation globalLocation)
+        {
+            globalGrabberPair = default;
+            globalLocation = null;
+            var saveData = GetSaveData();
+            return saveData != null && TryGetGlobalAutoGrabber(saveData.GlobalGrabberLocation, saveData.GlobalGrabberTile, assert, out globalGrabberPair, out globalLocation);
+        }
+        public bool TryGetGlobalAutoGrabber(string locationName, Vector2 tile, bool assert, out KeyValuePair<Vector2, SObject> globalGrabberPair, out GameLocation globalLocation)
+        {
+            globalGrabberPair = default;
+            globalLocation = null;
+            var location = Game1.getLocationFromName(locationName);
+            if (location == null)
+            {
+                if (assert) Monitor.Log($"Location {locationName} could not be found for global auto grabber.", LogLevel.Warn);
+                return false;
+            }
+            else
+            {
+                globalLocation = location;
+                if (location.Objects.TryGetValue(tile, out SObject obj))
+                {
+                    if (obj.ParentSheetIndex == ItemIds.Autograbber &&
+                            obj.heldObject.Value != null &&
+                            obj.heldObject.Value is Chest)
+                    {
+                        globalGrabberPair = new KeyValuePair<Vector2, SObject>(tile, obj);
+                        return true;
+                    }
+                    else
+                    {
+                        if (assert) Monitor.Log($"Object at {location.Name} ({tile.X}, {tile.Y}) is not an auto grabber.", LogLevel.Warn);
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (assert) Monitor.Log($"Global auto grabber could not be found in {location.Name} ({tile.X}, {tile.Y}).", LogLevel.Warn);
+                    return false;
+                }
+            }
+        }
+
+        private void OnButtonPress(object sender, StardewModdingAPI.Events.ButtonPressedEventArgs e)
+        {
+            if (Context.IsMainPlayer && Context.IsPlayerFree && e.Button == SButton.G)
+            {
+                var tile = e.Cursor.Tile;
+                var location = Game1.currentLocation;
+                if (location != null && TryGetGlobalAutoGrabber(location.Name, tile, false, out KeyValuePair<Vector2, SObject> grabberPair, out GameLocation globalLocation))
+                {
+                    var saveData = GetSaveData() ?? new ModSaveData();
+                    if (saveData.GlobalGrabberLocation == location.Name && saveData.GlobalGrabberTile == tile)
+                    {
+                        SetSaveData(new ModSaveData());
+                        Game1.addHUDMessage(new HUDMessage("Global grabber unset", null));
+                    }
+                    else
+                    {
+                        var newSaveData = new ModSaveData()
+                        {
+                            GlobalGrabberLocation = location.Name,
+                            GlobalGrabberTile = tile
+                        };
+                        SetSaveData(newSaveData);
+                        Game1.addHUDMessage(new HUDMessage($"Global grabber set at {location.Name} ({tile.X}, {tile.Y})", null));
+                        GrabAtAllLocations();
+                    }
+                }
+            }
         }
 
         private void OnLaunched(object sender, StardewModdingAPI.Events.GameLaunchedEventArgs e)
@@ -71,6 +162,21 @@ namespace DeluxeGrabberRedux
         private void OnObjectListChanged(object sender, StardewModdingAPI.Events.ObjectListChangedEventArgs e)
         {
             LogDebug($"Object list changed at {e.Location.Name}");
+            if (IsUsingGlobalGrabber())
+            {
+                var saveData = GetSaveData();
+                if (e.Location.Name == saveData.GlobalGrabberLocation)
+                {
+                    foreach (var removed in e.Removed)
+                    {
+                        if (removed.Key == saveData.GlobalGrabberTile && removed.Value.ParentSheetIndex == ItemIds.Autograbber)
+                        {
+                            SetSaveData(new ModSaveData());
+                            Game1.addHUDMessage(new HUDMessage("Global grabber removed", null));
+                        }
+                    }
+                }
+            }
             GrabAtLocation(e.Location);
         }
 
@@ -93,8 +199,7 @@ namespace DeluxeGrabberRedux
         private void OnDayStarted(object sender, StardewModdingAPI.Events.DayStartedEventArgs e)
         {
             LogDebug($"Autograbbing on day start");
-            var locations = Game1.locations.Concat(Game1.getFarm().buildings.Select(building => building.indoors.Value)).Where(location => location != null);
-            foreach (var location in locations) GrabAtLocation(location);
+            GrabAtAllLocations();
         }
 
         private void OnRenderedWorld(object sender, StardewModdingAPI.Events.RenderedWorldEventArgs e)
@@ -134,6 +239,11 @@ namespace DeluxeGrabberRedux
                     }
                 }
             }
+        }
+        private void GrabAtAllLocations()
+        {
+            var locations = Game1.locations.Concat(Game1.getFarm().buildings.Select(building => building.indoors.Value)).Where(location => location != null);
+            foreach (var location in locations) GrabAtLocation(location);
         }
 
         private bool GrabAtLocation(GameLocation location)

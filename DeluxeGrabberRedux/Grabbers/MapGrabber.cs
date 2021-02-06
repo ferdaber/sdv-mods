@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
@@ -43,11 +44,22 @@ namespace DeluxeGrabberRedux
             }
         }
 
+        protected readonly GameLocation GlobalLocation;
+
         public MapGrabber(ModEntry mod, GameLocation location)
         {
             Mod = mod;
             Location = location;
-            GrabberPairs = location.Objects.Pairs.Where(pair => IsValidGrabber(pair.Value, pair.Key)).ToList();
+            if (Mod.IsUsingGlobalGrabber() && Mod.TryGetGlobalAutoGrabber(true, out KeyValuePair<Vector2, SObject> globalGrabberPair, out GlobalLocation))
+            {
+
+                GrabberPairs = new List<KeyValuePair<Vector2, SObject>>() { globalGrabberPair };
+            } 
+            else
+            {
+                GlobalLocation = null;
+                GrabberPairs = location.Objects.Pairs.Where(pair => IsValidGrabber(pair.Value, pair.Key)).ToList();
+            }
         }
 
         protected bool TryAddItem(Item item, IEnumerable<KeyValuePair<Vector2, SObject>> grabbers)
@@ -137,7 +149,8 @@ namespace DeluxeGrabberRedux
 
         private bool IsValidGrabber(SObject obj, Vector2 tile)
         {
-            if (Location.Objects.ContainsKey(tile))
+            var location = GlobalLocation ?? Location;
+            if (location.Objects.ContainsKey(tile))
             {
                 return obj.ParentSheetIndex == ItemIds.Autograbber &&
                 obj.heldObject.Value != null &&

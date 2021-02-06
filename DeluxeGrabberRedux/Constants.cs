@@ -43,7 +43,6 @@ namespace DeluxeGrabberRedux
         public const int QiBeans = 890;
         public const int GuntherBones = 881;
         public const int Hardwood = 709;
-        public const int MahoganySeed = 292;
         public const int CopperOre = 378;
         public const int IronOre = 380;
         public const int GoldOre = 384;
@@ -56,6 +55,15 @@ namespace DeluxeGrabberRedux
         public const int FrozenTear = 84;
         public const int FossilizedTail = 822;
         public const int TaroTuber = 831;
+        public const int PineCone = 311;
+        public const int Acorn = 309;
+        public const int MapleSeed = 310;
+        public const int MahoganySeed = 292;
+        public const int Coconut = 88;
+        public const int GoldenCoconut = 791;
+        public const int Hazelnut = 408;
+
+
 
         // not an object id
         public const int LuckyRing = 859;

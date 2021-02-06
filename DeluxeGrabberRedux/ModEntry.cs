@@ -50,6 +50,7 @@ namespace DeluxeGrabberRedux
                 configApi.RegisterLabel(ModManifest, "Other Harvesting", "");
                 configApi.RegisterSimpleOption(ModManifest, "Harvest Fruit Trees", "", () => Config.fruitTrees, v => Config.fruitTrees = v);
                 configApi.RegisterSimpleOption(ModManifest, "Harvest Berry Bushes", "", () => Config.bushes, v => Config.bushes = v);
+                configApi.RegisterSimpleOption(ModManifest, "Shake Seed Trees", "", () => Config.seedTrees, v => Config.seedTrees = v);
                 configApi.RegisterSimpleOption(ModManifest, "Grab Slime Balls", "", () => Config.slimeHutch, v => Config.slimeHutch = v);
                 configApi.RegisterSimpleOption(ModManifest, "Grab Farm Cave Mushrooms", "This will also work for mushroom boxes placed outside the farm cave", () => Config.farmCaveMushrooms, v => Config.farmCaveMushrooms = v);
                 configApi.RegisterSimpleOption(ModManifest, "Dig Up Artifact Spots", "Note that lost books and secret notes will not be dug up", () => Config.artifactSpots, v => Config.artifactSpots = v);

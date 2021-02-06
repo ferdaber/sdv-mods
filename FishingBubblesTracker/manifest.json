@@ -1,0 +1,10 @@
+{
+    "Name": "Fishing Bubbles Tracker",
+    "Author": "ferdaber",
+    "Version": "1.0.0",
+    "Description": "Display arrows to fishing bubbles in the map",
+    "UniqueID": "ferdaber.FishingBubblesTracker",
+	"EntryDll": "FishingBubblesTracker.dll",
+    "MinimumApiVersion": "3.0.0",
+    "UpdateKeys": []
+}

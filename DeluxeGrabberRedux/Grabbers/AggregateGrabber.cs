@@ -42,6 +42,7 @@ namespace DeluxeGrabberRedux.Grabbers
                 new ForageHoeDirtGrabber(mod, location),
                 new HarvestableCropHoeDirtGrabber(mod, location),
                 new FruitTreeGrabber(mod, location),
+                new SeedTreeGrabber(mod, location),
                 new BerryBushGrabber(mod, location)
             };
         }

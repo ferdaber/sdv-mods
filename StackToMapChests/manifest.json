@@ -1,0 +1,10 @@
+{
+    "Name": "Stack to Map Chests",
+    "Author": "ferdaber",
+    "Version": "1.0.0",
+    "Description": "Stack inventory items to chests in current location",
+    "UniqueID": "ferdaber.StackToMapChests",
+	"EntryDll": "StackToMapChests.dll",
+    "MinimumApiVersion": "3.0.0",
+    "UpdateKeys": []
+}

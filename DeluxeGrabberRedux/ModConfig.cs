@@ -17,6 +17,7 @@ namespace DeluxeGrabberRedux
         public bool orePan;
         public bool bushes;
         public bool fruitTrees;
+        public bool seedTrees;
         public bool flowers;
         public bool reportYield;
         public bool gainExperience;
@@ -34,6 +35,7 @@ namespace DeluxeGrabberRedux
             orePan = false;
             bushes = true;
             fruitTrees = false;
+            seedTrees = false;
             flowers = false;
             reportYield = true;
             gainExperience = true;
